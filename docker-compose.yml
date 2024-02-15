@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  postgres:
+    container_name: postgres_db
+    image: postgres
+    restart: always
+    environment:
+      - from: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/botdata/
+    ports:
+      - "5432:5432"
+    networks:
+      - mainapp
+
+  mainserver:
+    container_name: mainserver
+    build: .
+    command: python manage.py runserver 0.0.0.0:5555
+    volumes:
+      - .:/code
+    ports:
+      - "5555:5555"
+    depends_on:
+      - postgres_db
+      - redis
+    env_file:
+      - ./.env
+    networks:
+      - mainapp
+
+  celery:
+    build: .
+    command: celery -A config worker -l info
+    restart: always
+    volumes:
+      - .:/code
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    networks:
+      - mainapp
+    links:
+      - redis:redis
+
+  celery-beat:
+    build: .
+    command: celery -A config beat -l info
+    restart: always
+    volumes:
+      - .:/code
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    networks:
+      - mainapp 
+
+  redis:
+    image: redis:alpine
+    restart: always
+    container_name: redis
+    networks:
+      - mainapp
+
+volumes:
+    postgres_data:
+    static_volume_bot:
+    media_volume_bot:
+  
+networks:
+  mainapp:
