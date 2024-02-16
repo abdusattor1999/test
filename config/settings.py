@@ -1,11 +1,13 @@
 from pathlib import Path
 import os
+from celery import Celery
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gsxmfj$-z1uut&xi)fy&rzyns5#1y@s1x+6xvp@#gng72x^2uo'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 ALLOWED_HOSTS = ["*"]
 DEBUG = True
 
@@ -110,3 +112,20 @@ DATABASES = {
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
+
+
+# Celery config
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
+
+# CELERY_BEAT_SCHEDULE = {
+#     "send_feeds": {
+#         "task": "apps.accounts.tasks.send_feeds",
+#         "schedule": crontab(hour="10"),
+#     },
+# }
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+celery_app = Celery('config')
+celery_app.config_from_object('django.conf:settings', namespace='CELERY')
+celery_app.autodiscover_tasks()

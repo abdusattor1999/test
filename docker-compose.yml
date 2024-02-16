@@ -6,9 +6,11 @@ services:
     image: postgres
     restart: always
     environment:
-      - from: .env
+      POSTGRES_DB: testdb
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
     volumes:
-      - postgres_data:/var/lib/postgresql/botdata/
+      - postgres_data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
     networks:
@@ -17,13 +19,14 @@ services:
   mainserver:
     container_name: mainserver
     build: .
+    restart: always
     command: python manage.py runserver 0.0.0.0:5555
     volumes:
       - .:/code
     ports:
       - "5555:5555"
     depends_on:
-      - postgres_db
+      - postgres
       - redis
     env_file:
       - ./.env

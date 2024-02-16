@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.signals import post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 
@@ -14,9 +14,9 @@ class Blog(models.Model):
         return f"{self.user}:{self.name}"
 
 @receiver(post_save, sender=User)
-def create_blog_for_user(sender, **kwargs):
-    if not sender.blog:
-        Blog.objects.create(user=sender, name=sender.username)
+def create_blog_for_user(sender, instance, created, **kwargs):
+    if created and not Blog.objects.filter(user=instance).exists():
+        Blog.objects.create(user=instance, name=instance.username)
 
 
 class Post(models.Model):
