@@ -12,5 +12,6 @@ class WatchedPosts(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
-
+    def exist(self):
+        return self.__class__.objects.filter(user=self.user, post=self.post).exists()
     
