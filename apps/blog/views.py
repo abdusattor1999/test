@@ -9,16 +9,8 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 
 
-class CustomPaginationMixin:
-    @staticmethod
-    def get_paginated_queryset(queryset, request, serializer):
-        paginator = PageNumberPagination()
-        context = paginator.paginate_queryset(queryset, request)
-        serializer = serializer(context, many=True)
-        return paginator.get_paginated_response(serializer.data)
 
-
-class BlogViewSet(ModelViewSet, CustomPaginationMixin):
+class BlogViewSet(ModelViewSet):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
     permission_classes = AllowAny,
@@ -72,10 +64,26 @@ class BlogViewSet(ModelViewSet, CustomPaginationMixin):
 
 
 
-class PostViewSet(ModelViewSet, CustomPaginationMixin):
+class PostViewSet(ModelViewSet):
     queryset = Post.objects.all().order_by("-created_at")
     serializer_class = PostSerializer
     permission_classes = IsAuthenticated,
+
+
+    def list(self, request, *args, **kwargs):
+        subscribed_blogs = Following.objects.filter(follower=request.user).values_list('id', flat=True)
+        posts = Post.objects.filter(blog_id__in=subscribed_blogs).order_by('-created_at')
+        blog_id = request.data.get("blog", None)
+        print(555, blog_id)
+        if blog_id:
+            posts = posts.filter(blog_id=blog_id)
+        page = self.paginate_queryset(posts)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
 
     
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])

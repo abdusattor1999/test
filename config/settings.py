@@ -39,9 +39,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
-    ],
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE': 10,  # Number of items per page
+    ]
 }
 
 ROOT_URLCONF = 'config.urls'
@@ -93,7 +91,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
 USE_TZ = True
 
@@ -117,17 +115,17 @@ DATABASES = {
     }
 }
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Celery config
 CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_BEAT_SCHEDULE = {
+    "send_feeds": {
+        "task": "apps.accounts.tasks.send_feeds",
+        "schedule": crontab(hour="10"),
+    },
+}
 
-# CELERY_BEAT_SCHEDULE = {
-#     "send_feeds": {
-#         "task": "apps.accounts.tasks.send_feeds",
-#         "schedule": crontab(hour="10"),
-#     },
-# }
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 celery_app = Celery('config')

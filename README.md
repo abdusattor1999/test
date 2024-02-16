@@ -1,10 +1,17 @@
 Клонируйте репозиторий:
 git clone https://github.com/abdusattor1999/test.git
 
-Докер:
-Постройте образ Docker:
-    docker-compose up --build
+1: build docker compose
+    docker compose up --build
 
+2: apply all migrations using interactive console
+    docker exec -it mainserver bash
+    python manage.py migrate
+    
+3: Create data from dumped data
+    python manage.py loaddata fixtures/*.json
+
+    
 API будет доступен по адресу http://localhost:5555
 API endpoints:
     Пользователи:

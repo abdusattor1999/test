@@ -22,7 +22,7 @@ def create_blog_for_user(sender, instance, created, **kwargs):
 class Post(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    body = models.CharField(max_length=140)
+    body = models.CharField(max_length=140, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
